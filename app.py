@@ -2,12 +2,14 @@ import streamlit as st
 from supabase import create_client, Client
 import pandas as pd
 
-# Conectar con Supabase (Usando la URL y la clave proporcionada)
+# Definir las credenciales directamente en el código
 SUPABASE_URL = "https://ecxxzxnyakrxabgsnxwo.supabase.co"
 SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVjeHh6eG55YWtyeGFiZ3NueHdvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIxODMwODQsImV4cCI6MjA1Nzc1OTA4NH0.hSsJG2AVuMSMpXCzLb31F3nC5_ZoqUeZExDxDSlokz8"
 
+# Crear cliente de Supabase
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
+# Título de la aplicación
 st.title("CRUD con Streamlit y Supabase")
 
 # ---------- 1️⃣ LECTURA (READ) ----------
