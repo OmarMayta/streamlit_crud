@@ -2,11 +2,10 @@ import streamlit as st
 from supabase import create_client, Client
 import pandas as pd
 
-# Obtener las claves desde Streamlit Secrets
-SUPABASE_URL = st.secrets["https://ecxxzxnyakrxabgsnxwo.supabase.co"]
-SUPABASE_KEY = st.secrets["eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVjeHh6eG55YWtyeGFiZ3NueHdvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIxODMwODQsImV4cCI6MjA1Nzc1OTA4NH0.hSsJG2AVuMSMpXCzLb31F3nC5_ZoqUeZExDxDSlokz8"]
+# Conectar con Supabase (Usando la URL y la clave proporcionada)
+SUPABASE_URL = "https://ecxxzxnyakrxabgsnxwo.supabase.co"
+SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVjeHh6eG55YWtyeGFiZ3NueHdvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIxODMwODQsImV4cCI6MjA1Nzc1OTA4NH0.hSsJG2AVuMSMpXCzLb31F3nC5_ZoqUeZExDxDSlokz8"
 
-# Conectar con Supabase
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 st.title("CRUD con Streamlit y Supabase")
