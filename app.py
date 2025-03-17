@@ -11,6 +11,9 @@ st.title("CRUD con Supabase")
 # Función para obtener usuarios
 def obtener_usuarios():
     response = supabase.table("usuarios").select("*").execute()
+    if response.error:
+        st.error(f"Error al obtener usuarios: {response.error.message}")
+        return []
     return response.data if response.data else []
 
 # Función para agregar usuario
@@ -38,8 +41,8 @@ edad = st.number_input("Edad", min_value=0, step=1)
 
 if st.button("Agregar Usuario"):
     respuesta = agregar_usuario(nombre, correo, edad)
-    if "error" in respuesta:
-        st.error(f"Error al agregar usuario: {respuesta['error']}")
+    if respuesta.error:
+        st.error(f"Error al agregar usuario: {respuesta.error.message}")
     else:
         st.success("Usuario agregado con éxito")
         st.experimental_rerun()
@@ -56,13 +59,19 @@ if usuarios:
             nueva_edad = st.number_input("Nueva Edad", min_value=0, step=1, value=usuario["edad"], key=f"edad_{usuario['id']}")
 
             if st.button("Actualizar", key=f"update_{usuario['id']}"):
-                actualizar_usuario(usuario["id"], nuevo_nombre, nuevo_correo, nueva_edad)
-                st.success("Usuario actualizado con éxito")
-                st.experimental_rerun()
+                respuesta = actualizar_usuario(usuario["id"], nuevo_nombre, nuevo_correo, nueva_edad)
+                if respuesta.error:
+                    st.error(f"Error al actualizar usuario: {respuesta.error.message}")
+                else:
+                    st.success("Usuario actualizado con éxito")
+                    st.experimental_rerun()
 
             if st.button("Eliminar", key=f"delete_{usuario['id']}"):
-                eliminar_usuario(usuario["id"])
-                st.warning("Usuario eliminado")
-                st.experimental_rerun()
+                respuesta = eliminar_usuario(usuario["id"])
+                if respuesta.error:
+                    st.error(f"Error al eliminar usuario: {respuesta.error.message}")
+                else:
+                    st.warning("Usuario eliminado")
+                    st.experimental_rerun()
 else:
     st.write("No hay usuarios registrados.")
