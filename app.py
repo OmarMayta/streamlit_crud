@@ -62,3 +62,46 @@ if submit_button:
 
     else:
         st.warning("Por favor, completa todos los campos.")
+# ---------- 3️⃣ ACTUALIZACIÓN (UPDATE) ----------
+st.subheader("Editar Usuario")
+
+# Obtener la lista de usuarios para seleccionar
+response = supabase.table("usuarios").select("*").execute()
+usuarios = response.data
+
+if usuarios:
+    usuario_seleccionado = st.selectbox("Selecciona un usuario:", [f"{u['id']} - {u['nombre']}" for u in usuarios])
+
+    if usuario_seleccionado:
+        user_id = int(usuario_seleccionado.split(" - ")[0])  # Extraer el ID del usuario seleccionado
+        usuario_data = next((u for u in usuarios if u["id"] == user_id), None)
+
+        if usuario_data:
+            with st.form(key="form_editar_usuario"):
+                nuevo_nombre = st.text_input("Nombre:", usuario_data["nombre"])
+                nuevo_correo = st.text_input("Correo:", usuario_data["correo"])
+                nueva_edad = st.number_input("Edad:", min_value=0, max_value=120, step=1, value=usuario_data["edad"])
+
+                # Botón para actualizar
+                update_button = st.form_submit_button("Actualizar Usuario")
+
+            if update_button:
+                try:
+                    update_data = {
+                        "nombre": nuevo_nombre,
+                        "correo": nuevo_correo,
+                        "edad": nueva_edad
+                    }
+                    response = supabase.table("usuarios").update(update_data).eq("id", user_id).execute()
+
+                    if response.data:
+                        st.success("Usuario actualizado correctamente.")
+                        st.experimental_rerun()  # Recargar la página para ver los cambios
+                    else:
+                        st.error("No se pudo actualizar el usuario.")
+
+                except Exception as e:
+                    st.error(f"Error al actualizar usuario: {e}")
+
+else:
+    st.warning("No hay usuarios registrados para editar.")
