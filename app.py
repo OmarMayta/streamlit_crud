@@ -3,8 +3,8 @@ from supabase import create_client, Client
 import pandas as pd
 
 # Conectar con Supabase
-SUPABASE_URL = "TU_SUPABASE_URL"
-SUPABASE_KEY = "TU_SUPABASE_API_KEY"
+SUPABASE_URL = "https://ecxxzxnyakrxabgsnxwo.supabase.co"
+SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVjeHh6eG55YWtyeGFiZ3NueHdvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIxODMwODQsImV4cCI6MjA1Nzc1OTA4NH0.hSsJG2AVuMSMpXCzLb31F3nC5_ZoqUeZExDxDSlokz8"
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 st.title("CRUD con Streamlit y Supabase")
