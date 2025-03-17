@@ -1,107 +1,68 @@
 import streamlit as st
 from supabase import create_client, Client
-import pandas as pd
 
-# Definir las credenciales directamente en el código
+# Conexión a Supabase
 SUPABASE_URL = "https://ecxxzxnyakrxabgsnxwo.supabase.co"
 SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVjeHh6eG55YWtyeGFiZ3NueHdvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIxODMwODQsImV4cCI6MjA1Nzc1OTA4NH0.hSsJG2AVuMSMpXCzLb31F3nC5_ZoqUeZExDxDSlokz8"
-
-# Crear cliente de Supabase
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-# Título de la aplicación
-st.title("CRUD con Streamlit y Supabase")
+st.title("CRUD con Supabase")
 
-# ---------- 1️⃣ LECTURA (READ) ----------
-st.subheader("Lista de Usuarios")
-
-try:
+# Función para obtener usuarios
+def obtener_usuarios():
     response = supabase.table("usuarios").select("*").execute()
-    data = response.data
+    return response.data if response.data else []
 
-    if data:
-        df = pd.DataFrame(data)  # Convertimos los datos en un DataFrame
-        st.dataframe(df)  # Mostramos la tabla en Streamlit
+# Función para agregar usuario
+def agregar_usuario(nombre, correo, edad):
+    datos = {"nombre": nombre, "correo": correo, "edad": edad}
+    respuesta = supabase.table("usuarios").insert(datos).execute()
+    return respuesta
+
+# Función para actualizar usuario
+def actualizar_usuario(usuario_id, nuevo_nombre, nuevo_correo, nueva_edad):
+    datos = {"nombre": nuevo_nombre, "correo": nuevo_correo, "edad": nueva_edad}
+    respuesta = supabase.table("usuarios").update(datos).eq("id", usuario_id).execute()
+    return respuesta
+
+# Función para eliminar usuario
+def eliminar_usuario(usuario_id):
+    respuesta = supabase.table("usuarios").delete().eq("id", usuario_id).execute()
+    return respuesta
+
+# Formulario para agregar usuario
+st.header("Agregar Usuario")
+nombre = st.text_input("Nombre")
+correo = st.text_input("Correo")
+edad = st.number_input("Edad", min_value=0, step=1)
+
+if st.button("Agregar Usuario"):
+    respuesta = agregar_usuario(nombre, correo, edad)
+    if "error" in respuesta:
+        st.error(f"Error al agregar usuario: {respuesta['error']}")
     else:
-        st.warning("No hay usuarios registrados.")
+        st.success("Usuario agregado con éxito")
+        st.experimental_rerun()
 
-except Exception as e:
-    st.error(f"Error al obtener datos: {e}")
-
-# ---------- 2️⃣ CREACIÓN (CREATE) ----------
-st.subheader("Agregar Nuevo Usuario")
-
-# Crear un formulario en Streamlit
-with st.form(key="form_nuevo_usuario"):
-    nombre = st.text_input("Nombre:")
-    correo = st.text_input("Correo:")
-    edad = st.number_input("Edad:", min_value=0, max_value=120, step=1)
-
-    # Botón para enviar datos
-    submit_button = st.form_submit_button("Agregar Usuario")
-
-# Si el usuario presiona el botón, insertamos en Supabase
-if submit_button:
-    if nombre and correo and edad:  # Validamos que los campos no estén vacíos
-        try:
-            data = {
-                "nombre": nombre,
-                "correo": correo,
-                "edad": edad
-            }
-            response = supabase.table("usuarios").insert(data).execute()
-
-            if response.data:
-                st.success("Usuario agregado exitosamente.")
-                st.experimental_rerun()  # Recargar la página para actualizar la tabla
-            else:
-                st.error("No se pudo agregar el usuario.")
-
-        except Exception as e:
-            st.error(f"Error al agregar usuario: {e}")
-
-    else:
-        st.warning("Por favor, completa todos los campos.")
-# ---------- 3️⃣ ACTUALIZACIÓN (UPDATE) ----------
-st.subheader("Editar Usuario")
-
-# Obtener la lista de usuarios para seleccionar
-response = supabase.table("usuarios").select("*").execute()
-usuarios = response.data
+# Mostrar usuarios
+st.header("Lista de Usuarios")
+usuarios = obtener_usuarios()
 
 if usuarios:
-    usuario_seleccionado = st.selectbox("Selecciona un usuario:", [f"{u['id']} - {u['nombre']}" for u in usuarios])
+    for usuario in usuarios:
+        with st.expander(f"📌 {usuario['nombre']} - {usuario['correo']} - {usuario['edad']} años"):
+            nuevo_nombre = st.text_input("Nuevo Nombre", usuario["nombre"], key=f"nombre_{usuario['id']}")
+            nuevo_correo = st.text_input("Nuevo Correo", usuario["correo"], key=f"correo_{usuario['id']}")
+            nueva_edad = st.number_input("Nueva Edad", min_value=0, step=1, value=usuario["edad"], key=f"edad_{usuario['id']}")
 
-    if usuario_seleccionado:
-        user_id = int(usuario_seleccionado.split(" - ")[0])  # Extraer el ID del usuario seleccionado
-        usuario_data = next((u for u in usuarios if u["id"] == user_id), None)
+            if st.button("Actualizar", key=f"update_{usuario['id']}"):
+                actualizar_usuario(usuario["id"], nuevo_nombre, nuevo_correo, nueva_edad)
+                st.success("Usuario actualizado con éxito")
+                st.experimental_rerun()
 
-        if usuario_data:
-            with st.form(key="form_editar_usuario"):
-                nuevo_nombre = st.text_input("Nombre:", usuario_data["nombre"])
-                nuevo_correo = st.text_input("Correo:", usuario_data["correo"])
-                nueva_edad = st.number_input("Edad:", min_value=0, max_value=120, step=1, value=usuario_data["edad"])
-
-                # Botón para actualizar
-                update_button = st.form_submit_button("Actualizar Usuario")
-
-            if update_button:
-                try:
-                    update_data = {
-                        "nombre": nuevo_nombre,
-                        "correo": nuevo_correo,
-                        "edad": nueva_edad
-                    }
-                    response = supabase.table("usuarios").update(update_data).eq("id", user_id).execute()
-
-                    if response.data:
-                        st.success("Usuario actualizado correctamente.")
-                        st.experimental_rerun()  # Recargar la página para ver los cambios
-                    else:
-                        st.error("No se pudo actualizar el usuario.")
-
-                except Exception as e:
-                    st.error(f"Error al actualizar usuario: {e}")
-
+            if st.button("Eliminar", key=f"delete_{usuario['id']}"):
+                eliminar_usuario(usuario["id"])
+                st.warning("Usuario eliminado")
+                st.experimental_rerun()
 else:
-    st.warning("No hay usuarios registrados para editar.")
+    st.write("No hay usuarios registrados.")
